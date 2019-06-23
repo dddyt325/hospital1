@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>宜居城市</title>
+	<link rel="stylesheet" href="https://js.arcgis.com/4.11/esri/themes/light/main.css">
+	<!--------------- 顶部导航样式表 ------------------------>
+	<link rel="stylesheet" type="text/css" href="css/nav.css">
+	<!--------------- 侧边按钮样式表 ------------------------>
+	<link rel="stylesheet" type="text/css" href="css/map.css">
+	<link rel="stylesheet" type="text/css" href="//at.alicdn.com/t/font_1247530_wiwecqp8uv.css" />
+  <script src="https://js.arcgis.com/4.11/"></script>
+	<link rel="stylesheet" type="text/css" href="http://localhost/arcgis_js_api/library/3.17/3.17/dijit/themes/claro/claro.css" />
+	<script src="js/chart.js"></script>
+  </head>
+  <body>
+
+    <div id="viewDiv">
+			
+		</div>
+    <span id="layerToggle"> <input type="checkbox" id="pointcsvLayer" checked /> 十佳避暑之都 </span>
+		<span id="layerToggle1"> <input type="checkbox" id="geoLayer" checked /> 2018年最高气温 </span>
+	<script>
+		require([
+			"esri/Map",
+			"esri/views/MapView",
+			"esri/widgets/BasemapToggle",
+			//"esri/layers/FeatureLayer",
+			"esri/Graphic",
+			"esri/tasks/Locator",
+			"esri/layers/CSVLayer",
+			"esri/layers/GeoJSONLayer",
+			"esri/widgets/Legend",
+      "esri/Graphic",
+		],function(Map, MapView, BasemapToggle,Graphic,Locator,CSVLayer,GeoJSONLayer,Legend,Graphic){
+			var templatecsv = {
+		    title: "简介",
+				content:[
+					{
+					type:"fields",
+					fieldInfos:[
+						{
+							fieldName:"name",
+							label:"市名"
+						},
+						{
+							fieldName:"captial",
+							label:"所属省"
+						},
+						{
+							fieldName:"youbian",
+							label:"邮编"
+						}
+					],
+					},
+					{
+						type:"text",
+						text:"{address}"
+					},
+
+				]
+			};
+			
+		
+		  var csvLayer = new CSVLayer({
+		    url: "https://dddyt325.github.io/hospital1/hospital site.csv",
+		    copyright: "USGS Earthquakes",
+		    popupTemplate: templatecsv,
+				id: "csv",
+				visible: false,
+        opacity: 0.9
+		  });
+		
+		  csvLayer.renderer = {
+		    type: "simple", // autocasts as new SimpleRenderer()
+		    symbol: {
+		      type: "simple-marker", 
+					color: [204, 222, 141],
+		    },
+				//2018年旅游人数
+				visualVariables: [
+            {
+              type: "size",
+              field: "2018Tourists",
+              minDataValue: 4000,
+              maxDataValue: 10000,
+              minSize: 8,
+              maxSize: 20,
+            }
+          ]
+
+		  };
+			
+			const geojsonLayer = new GeoJSONLayer({
+			  url:" https://dddyt325.github.io/111/chinawgs84tq.json",
+				id:"geo",
+				visible: false,
+				renderer: {
+				    type: "class-breaks",
+				    defaultSymbol: {
+				      type: "simple-fill",
+				      color: "#EEE8AA",
+				      outline: {
+				        color: [255, 255, 255, 0.1],
+				        width: 0.5
+				      }
+				    },
+				    visualVariables: [
+				      {
+				        type: "color",
+				        field: "2018TopTem",
+				        stops: [
+				          { value: 30, color: "#B0E0E6" },
+				          { value: 40, color: "#5CACEE" }
+				        ]
+				      }
+				    ]
+				 }, 
+				 
+				popupTemplate: {
+			  title: "简介",
+				content:[
+					{
+					type:"fields",
+					fieldInfos:[
+						{
+							fieldName:"ENGLISH",
+							label:"省名"
+						},
+						{
+							fieldName:"2018TopTem",
+							label:"2018年夏季最高温（°C）"
+						},
+						{
+							fieldName:"pop2000",
+							label:"2000年全省旅游人数"
+						},
+						{
+							fieldName:"pop2010",
+							label:"2010年全省旅游人数"
+						},
+					]
+					},
+					{
+					type:"media",
+					mediaInfos: [
+						  {
+								title: "<b>2018年全省优良差天数占比</b>",
+                type: "pie-chart",
+                caption: "",
+                value: {
+                fields: ["GoodDay","BadDay"],
+                normalizeField: null,
+                tooltipField: "GoodDayBadDay",
+								}
+							},
+						 ]
+					}
+				] 					 
+				 },
+				 outFields: ["*"]
+				});
+
+		
+			var map = new Map({
+				basemap: "streets-navigation-vector",
+				});
+				map.add(csvLayer);
+			  map.add(geojsonLayer);
+
+			var view = new MapView({
+				container:"viewDiv",
+				map: map,
+				center:[105.71511, 36.09042], // longitude, latitude
+				zoom: 3.5,
+        popup: {
+					dockEnabled: true,
+          dockOptions: {
+						buttonEnabled: false,
+            breakpoint: false,
+						},
+						}				
+			});
+			view.ui.add(
+			new Legend({
+				view: view,
+				}),
+				"top-right"
+				);
+ 
+			//控件checkbox
+      var streetsLayerToggle = document.getElementById("pointcsvLayer");
+				streetsLayerToggle.addEventListener("change", function() {
+          csvLayer.visible = streetsLayerToggle.checked;
+        });
+			var streetsLayerToggle1 = document.getElementById("geoLayer");
+				streetsLayerToggle1.addEventListener("change", function() {
+				  geojsonLayer.visible = streetsLayerToggle1.checked;
+				});
+			
+			 //底图切换
+ 			var basemapToggle = new BasemapToggle({
+				view: view,
+				nextBasemap: "satellite",
+				});
+				view.ui.add(basemapToggle, "bottom-right"); 
+			//位置信息,比例尺,缩放大小
+			var coordsWidget = document.createElement("div");
+      coordsWidget.id = "coordsWidget";
+      coordsWidget.className = "esri-widget esri-component";
+      coordsWidget.style.padding = "7px 15px 5px";
+
+      view.ui.add(coordsWidget, "bottom-left");
+			 function showCoordinates(pt) {
+        var coords = "Lat/Lon " + pt.latitude.toFixed(3) + " " + pt.longitude.toFixed(3) +
+            " | Scale 1:" + Math.round(view.scale * 1) / 1 +
+            " | Zoom " + view.zoom;
+        coordsWidget.innerHTML = coords;
+      }
+			view.watch("stationary", function(isStationary) {
+        showCoordinates(view.center);
+      });
+
+      view.on("pointer-move", function(evt) {
+        showCoordinates(view.toMap({ x: evt.x, y: evt.y }));
+      });
+			//高亮显示
+			let graphics;
+
+      view.whenLayerView(geojsonLayer).then(function(layerView) {
+          layerView.watch("updating", function(value) {
+            if (!value) {
+              var highlightHUBU;
+              view.on('pointer-move', function(evt){
+                var point = view.toMap({x: evt.x, y: evt.y});
+                // query all the features available for drawing.
+              
+              layerView
+                .queryFeatures({
+                  geometry: point,
+                  returnGeometry: true
+                })
+                .then(function(results) {
+                   if(highlightHUBU)
+                   {
+                     highlightHUBU.remove();
+                   }
+                   highlightHUBU=layerView.highlight(results.features);
+                   
+                })
+                .catch(function(error) {
+                  console.error("query failed: ", error);
+                });
+              });
+            }
+          });
+        });		
+});
+			
+			
+	</script>
+  </body>
+</html>

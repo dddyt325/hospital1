@@ -1,0 +1,57 @@
+html, body, #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+}
+#layerToggle {
+        top: 360px;
+        left: 20px;
+        position: absolute;
+        z-index: 99;
+        background-color: white;
+        border-radius: 8px;
+        padding: 10px;
+        opacity: 0.75;
+}
+#layerToggle1 {
+		top: 310px;
+		left: 20px;
+		position: absolute;
+		z-index: 99;
+		background-color: white;
+		border-radius: 8px;
+	    padding: 10px;
+		opacity: 0.75;
+}
+.mapbtn{
+	width: 32px;
+	height: 75px;
+	position: absolute;
+	top:90px;
+	left:14px;
+	background-color: white;
+	z-index: 20;
+	list-style: none;
+	border-radius: 3px;
+	border: 1px solid  silver;
+}
+
+.mapbtn>li {
+	margin-top: 9px;
+	margin-left: 5px;
+	margin-right: 5px;
+	padding-bottom: 8px;
+	text-decoration: none;
+	text-align: center;
+	line-height: 20px;
+	border-bottom: 1px solid silver;
+	color: grey;
+}
+
+.mapbtn>li.lastltem {
+	border-width: 0px;
+}
+.mapbtn li:hover{
+	background-color: #f0f0f0;
+}
